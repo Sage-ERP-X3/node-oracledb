@@ -1486,6 +1486,12 @@ void Connection::DoDefines ( eBaton* executeBaton, const dpi::MetaData* meta,
         defines[col].fetchType = Connection::GetTargetType ( executeBaton,
                                                executeBaton->columnNames[col],
                                                dpi::DpiRowid );
+
+        if ( defines[col].fetchType == dpi::DpiRowid ) {
+          defines[col].fetchType = DpiVarChar;
+          defines[col].maxSize   = 18;
+        }
+
         if ( defines[col].fetchType != dpi::DpiVarChar )
         {
           executeBaton->error = NJSMessages::getErrorMsg (
