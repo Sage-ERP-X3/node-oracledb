@@ -1,4 +1,4 @@
-/* Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved. */
+/* Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved. */
 
 /******************************************************************************
  *
@@ -69,20 +69,19 @@ using namespace v8;
 
 /* Keep the version in sync with package.json */
 #define NJS_NODE_ORACLEDB_MAJOR       1
-#define NJS_NODE_ORACLEDB_MINOR       3
-#define NJS_NODE_ORACLEDB_PATCH       0
+#define NJS_NODE_ORACLEDB_MINOR       7
+#define NJS_NODE_ORACLEDB_PATCH       1
 
 /* Used for Oracledb.version */
 #define NJS_NODE_ORACLEDB_VERSION   ( (NJS_NODE_ORACLEDB_MAJOR * 10000) + \
                                       (NJS_NODE_ORACLEDB_MINOR * 100) +   \
                                       (NJS_NODE_ORACLEDB_PATCH) )
 
-
-class Oracledb: public ObjectWrap
+class Oracledb: public Nan::ObjectWrap
 {
  public:
 
-  Persistent<Object> jsOracledb;
+  Nan::Persistent<Object> jsOracledb;
 
    // Oracledb class
    static void Init(Handle<Object> target);
@@ -106,7 +105,7 @@ class Oracledb: public ObjectWrap
 
 private:
    // Define Oracledb Constructor
-   static Persistent<FunctionTemplate> oracledbTemplate_s;
+   static Nan::Persistent<FunctionTemplate> oracledbTemplate_s;
 
    static NAN_METHOD(New);
 
@@ -121,21 +120,21 @@ private:
    static void Async_AfterCreatePool (uv_work_t *req);
 
    // Define Getter Accessors to Properties
-   static NAN_PROPERTY_GETTER(GetPoolMin);
-   static NAN_PROPERTY_GETTER(GetPoolMax);
-   static NAN_PROPERTY_GETTER(GetPoolIncrement);
-   static NAN_PROPERTY_GETTER(GetPoolTimeout);
-   static NAN_PROPERTY_GETTER(GetStmtCacheSize);
-   static NAN_PROPERTY_GETTER(GetAutoCommit);
-   static NAN_PROPERTY_GETTER(GetMaxRows);
-   static NAN_PROPERTY_GETTER(GetOutFormat);
-   static NAN_PROPERTY_GETTER(GetVersion);
-   static NAN_PROPERTY_GETTER(GetConnectionClass);
-   static NAN_PROPERTY_GETTER(GetExternalAuth);
-   static NAN_PROPERTY_GETTER(GetPrefetchRows);
-   static NAN_PROPERTY_GETTER(GetFetchAsString);
-   static NAN_PROPERTY_GETTER(GetLobPrefetchSize);
-   static NAN_PROPERTY_GETTER(GetOracleClientVersion);
+   static NAN_GETTER(GetPoolMin);
+   static NAN_GETTER(GetPoolMax);
+   static NAN_GETTER(GetPoolIncrement);
+   static NAN_GETTER(GetPoolTimeout);
+   static NAN_GETTER(GetStmtCacheSize);
+   static NAN_GETTER(GetAutoCommit);
+   static NAN_GETTER(GetMaxRows);
+   static NAN_GETTER(GetOutFormat);
+   static NAN_GETTER(GetVersion);
+   static NAN_GETTER(GetConnectionClass);
+   static NAN_GETTER(GetExternalAuth);
+   static NAN_GETTER(GetPrefetchRows);
+   static NAN_GETTER(GetFetchAsString);
+   static NAN_GETTER(GetLobPrefetchSize);
+   static NAN_GETTER(GetOracleClientVersion);
 
    // Define Setter Accessors to Properties
    static NAN_SETTER(SetPoolMin);
@@ -153,7 +152,6 @@ private:
    static NAN_SETTER(SetFetchAsString);
    static NAN_SETTER(SetLobPrefetchSize);
    static NAN_SETTER(SetOracleClientVersion);
-
 
    Oracledb();
    ~Oracledb();
@@ -203,25 +201,27 @@ typedef struct connectionBaton
 
   unsigned int maxRows;
   unsigned int outFormat;
-  Persistent<Function> cb;
+  Nan::Persistent<Function> cb;
   dpi::Env*   dpienv;
   dpi::Conn*  dpiconn;
   dpi::SPool* dpipool;
 
-
   Oracledb *oracledb;
 
-  connectionBaton() : user(""), pswrd(""), connStr(""), connClass(""),
+  connectionBaton( Local<Function> callback ) :
+                      user(""), pswrd(""), connStr(""), connClass(""),
                       externalAuth(false), error(""),
                       poolMax(0), poolMin(0), poolIncrement(0),
                       poolTimeout(0), stmtCacheSize(0), maxRows(0),
                       outFormat(0), dpienv(NULL),
                       dpiconn(NULL), dpipool(NULL)
-  {}
+  { 
+    cb.Reset( callback );
+  }
 
   ~connectionBaton()
    {
-     NanDisposePersistent(cb);
+     cb.Reset();
    }
 
 }connectionBaton;
